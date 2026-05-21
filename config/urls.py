@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path,include
 
 
-from auth.views import CustomLoginView, RefreshTokenView, RegisterView
+from auth.views import CustomLoginView, RefreshTokenView, RegisterView, VerifyTokenView
 
 
 urlpatterns = [
@@ -11,6 +11,6 @@ urlpatterns = [
     path('api/token/', CustomLoginView.as_view()),
     path('api/register/', RegisterView.as_view()),
     path('api/token/refresh/', RefreshTokenView.as_view()),
-    
+    path('api/me/', VerifyTokenView.as_view()),
     path('api/', include('feedback.urls')),
 ]
