@@ -59,8 +59,10 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'config.urls'
 
 # CORS_ALLOWED_ORIGINS = []   #Proivde urls here to explicitily mention urls.
-
-CORS_ALLOW_ALL_ORIGINS = True  #ALLOW ALL ORIGINS ON DEV ENV
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+]
+# CORS_ALLOW_ALL_ORIGINS = True  #ALLOW ALL ORIGINS ON DEV ENV
 CORS_ALLOW_CREDENTIALS = True
 
 TEMPLATES = [

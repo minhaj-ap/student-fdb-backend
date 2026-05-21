@@ -110,8 +110,13 @@ class RegisterView(APIView):
         return response
     
 class RefreshTokenView(APIView):
+    
+    authentication_classes = []
+    permission_classes = []
+    
     def post(self, request):
         refresh_token = request.COOKIES.get('refresh_token')
+        
         
         if not refresh_token:
             return Response({'error': 'Refresh token is required.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -133,6 +138,6 @@ class RefreshTokenView(APIView):
 
             return response
         except Exception as e:
-            return Response({'error': 'Invalid refresh token.'}, status=status.HTTP_400_BAD_REQUEST)
-        
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
