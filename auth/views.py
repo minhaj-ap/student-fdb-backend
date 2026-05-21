@@ -15,6 +15,11 @@ def get_tokens_for_user(user):
     }
       
 class CustomLoginView(APIView):
+    
+    authentication_classes = []
+    permission_classes = []
+    
+    
     def post(self, request):
         
         username = request.data.get('username')
@@ -32,7 +37,7 @@ class CustomLoginView(APIView):
         authenticate_user = authenticate(username=username, password=password)
             
         if not authenticate_user:
-            return Response({'error': 'Authentication failed.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Authentication failed.   '}, status=status.HTTP_400_BAD_REQUEST)
             
         tokens = get_tokens_for_user(authenticate_user)
         user_data = {
@@ -65,6 +70,11 @@ class CustomLoginView(APIView):
         return response
     
 class RegisterView(APIView):
+        
+    authentication_classes = []
+    permission_classes = []
+    
+    
     def post(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
