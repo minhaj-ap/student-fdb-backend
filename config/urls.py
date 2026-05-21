@@ -4,13 +4,15 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from auth.views import AutoLoginView
+from auth.views import CustomLoginView, RefreshTokenView, RegisterView
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     
-    path('api/token/', AutoLoginView.as_view()),
-    path('api/token/refresh/', TokenRefreshView.as_view()),
+    path('api/token/', CustomLoginView.as_view()),
+    path('api/register/', RegisterView.as_view()),
+    path('api/token/refresh/', RefreshTokenView.as_view()),
     
     path('api/', include('feedback.urls')),
 ]
