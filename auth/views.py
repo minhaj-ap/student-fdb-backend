@@ -30,29 +30,37 @@ class AutoLoginView(APIView):
             
             user = User.objects.create_user(username=username, password=password)
             
-            authenticate_user = authenticate(username=username, password=password)
+        authenticate_user = authenticate(username=username, password=password)
             
-            if not authenticate_user:
-                return Response({'error': 'Authentication failed after user creation.'}, status=status.HTTP_400_BAD_REQUEST)
+        if not authenticate_user:
+            return Response({'error': 'Authentication failed after user creation.'}, status=status.HTTP_400_BAD_REQUEST)
             
-            tokens = get_tokens_for_user(authenticate_user)
-            response = Response(tokens, status=status.HTTP_200_OK)
-            
-            isProduction = os.getenv('DJANGO_ENV') == 'production'
+        tokens = get_tokens_for_user(authenticate_user)
+        user_data = {
+            'id': authenticate_user.id,
+            'username': authenticate_user.username,
+            'is_staff': authenticate_user.is_staff,
+            'is_superuser': authenticate_user.is_superuser,
+            'is_active': authenticate_user.is_active,
+        }
+        response = Response({'tokens': tokens, 'user': user_data}, status=status.HTTP_200_OK)
 
-            response.set_cookie(
-                key='access_token',
-                value=tokens['access'],
-                httponly=True,
-                secure=isProduction,
-                samesite='None' if isProduction else 'Lax',
-            )
+        isProduction = os.getenv('DJANGO_ENV') == 'production'
 
-            response.set_cookie(
-                key='refresh_token',
-                value=tokens['refresh'],
-                httponly=True,
-                secure=isProduction,
-                samesite='None' if isProduction else 'Lax',
-            )
-            return response
+        response.set_cookie(
+            key='access_token',
+            value=tokens['access'],
+            httponly=True,
+            secure=isProduction,
+            samesite='None' if isProduction else 'Lax',
+        )
+
+        response.set_cookie(
+            key='refresh_token',
+            value=tokens['refresh'],
+            httponly=True,
+            secure=isProduction,
+            samesite='None' if isProduction else 'Lax',
+        )
+
+        return response
