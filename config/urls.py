@@ -11,7 +11,6 @@ urlpatterns = [
     
     path('api/token/', AutoLoginView.as_view()),
     path('api/token/refresh/', TokenRefreshView.as_view()),
-    path('api/register/', include('users.urls')),
     
     path('api/', include('feedback.urls')),
 ]
