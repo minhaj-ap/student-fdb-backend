@@ -1,29 +1,93 @@
-there are 2 models, user and feedback.
+# Student Feedback Backend
 
-USER Flow:
+Django REST API for collecting and managing student feedback. Includes JWT-based auth (cookies), feedback CRUD, and admin workflows.
 
-- USER login to his account
-- If no account create one and pass jwt with refresh and access token
-- Allow user to create, read, edit and delete his feedback
-- Feedbacks are selcted with user_id with the user.id
-- A feedback will contain subject (text) category (text with dropdwon) message (text), rating (integer from 1 to 5).
-- Whille creating a feedback an id , timestamp and the user id and status set to pending should also be kept.
-- While editing a feedback the status should be setted to pending again if changed also the user id validates to allow edit
-- Categories are hardcoded into ['academics','infrastructure','extra-curricular activities']
+**Requirements**
 
-ADMIN Flow:
+- **Python:** 3.10+ (recommended)
+- **Packages:** See `requirements.txt` ([requirements.txt](requirements.txt))
 
-- ADMIN login to his account where validation is is_staff = True
-- Able to modify the status of feedbakcs.
-- Status options are hardcoded to ['pending','reviewed','resolved']
+**Environment variables**
 
-AUTH
+- **SECRET_KEY:** Django secret key
+- **DEBUG:** `TRUE` or `FALSE`
+- **DJANGO_ENV:** `production` to enable secure cookies
+- **DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT:** PostgreSQL credentials
 
-- Admin created form terminal as super user with 
-name:admin
-email:admin@gmail.com
-passowrd:admin
+**Quick Setup**
 
-- User are created with username and password
-- 2 tokens are passed refresh and access token with user details
-- if admin is_staff will be true  for front end validation
+- Create and activate a virtual env, then install dependencies:
+
+```bash
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+- Create a `.env` file with the required environment variables above.
+- Run migrations and create a superuser:
+
+```bash
+python manage.py migrate
+python manage.py createsuperuser
+```
+
+- Start the development server:
+
+```bash
+python manage.py runserver
+```
+
+**Project structure**
+
+- **manage.py:** [manage.py](manage.py)
+- **Config:** [config/settings.py](config/settings.py), [config/urls.py](config/urls.py)
+- **Authentication:** [auth/authentication.py](auth/authentication.py), [auth/views.py](auth/views.py)
+- **Feedback app:** [feedback/models.py](feedback/models.py), [feedback/serializers.py](feedback/serializers.py), [feedback/views.py](feedback/views.py), [feedback/urls.py](feedback/urls.py)
+
+**Authentication & Tokens**
+
+- The project uses `rest_framework_simplejwt` and stores tokens in HTTP-only cookies:
+  - `access_token` cookie (used by API requests)
+  - `refresh_token` cookie (used to refresh access)
+- Custom cookie authentication class: `auth.authentication.CookieJWTAuthentication` ([auth/authentication.py](auth/authentication.py)).
+- Endpoints for auth (defined in [config/urls.py](config/urls.py)):
+  - `POST /api/register/` — register new user (sets cookies)
+  - `POST /api/token/` — login (sets cookies)
+  - `POST /api/token/refresh/` — refresh access token (reads `refresh_token` cookie)
+  - `GET /api/me/` — validate current token and return user info (requires authentication)
+
+**Feedback API**
+
+- Routes (prefixed with `/api/`, see [feedback/urls.py](feedback/urls.py)):
+  - `GET /api/feedbacks/` — list feedbacks (staff/admin sees all; users see their own)
+  - `POST /api/feedbacks/` — create feedback (authenticated users only)
+  - `PUT /api/feedbacks/:id` — update feedbacks (status gets resetted to pending)
+  - `DELETE /api/feedbacks/:id` — delete feedbacks(authenticated users only, staff/admin cant delete)
+
+**Models**
+
+- `Feedback` model (see [feedback/models.py](feedback/models.py)) fields:
+  - `subject`
+  - `category` (academics|infrastructure|activities|other),
+  - `message`
+  - `rating` (1-5),
+  - `status` (pending|reviewed|resolved)
+  - `created_at`, `updated_at`, `user` (Django `User`)
+
+**Serializers**
+
+- `FeedbackSerializer` — for regular users; fields read-only: `user`, `status`, `created_at` and `updated_at`
+- `AdminFeedbackSerializer` — for staff; allows status updates (see [feedback/serializers.py](feedback/serializers.py))
+
+**Permissions & Behavior**
+
+- All feedback endpoints require authentication (`IsAuthenticated`).
+- Non-staff users can only access and modify their own feedback. When non-staff users update a feedback, `status` is forced to `pending`.
+- Staff users can list and operate on all feedback and use the admin serializer.
+
+
+**Notes & Next Steps**
+
+- Configure `CORS_ALLOWED_ORIGINS` in `config/settings.py` for your frontend (it currently allows `http://localhost:3000`).
+- Ensure `.env` includes database and secret values before running in production and set `DJANGO_ENV=production` to enable secure cookie flags.
