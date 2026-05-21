@@ -6,3 +6,9 @@ class FeedbackSerializer(serializers.ModelSerializer):
         model = Feedback
         fields = '__all__'
         read_only_fields = ['user','status', 'created_at', 'updated_at']
+        
+class AdminFeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Feedback
+        fields = '__all__'
+        read_only_fields = ['user','created_at', 'updated_at']
