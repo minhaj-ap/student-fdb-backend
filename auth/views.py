@@ -5,6 +5,8 @@ from rest_framework import status
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 
+import os
+
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
     return {
@@ -34,5 +36,23 @@ class AutoLoginView(APIView):
                 return Response({'error': 'Authentication failed after user creation.'}, status=status.HTTP_400_BAD_REQUEST)
             
             tokens = get_tokens_for_user(authenticate_user)
-            return Response(tokens, status=status.HTTP_200_OK)
-    
+            response = Response(tokens, status=status.HTTP_200_OK)
+            
+            isProduction = os.getenv('DJANGO_ENV') == 'production'
+
+            response.set_cookie(
+                key='access_token',
+                value=tokens['access'],
+                httponly=True,
+                secure=isProduction,
+                samesite='None' if isProduction else 'Lax',
+            )
+
+            response.set_cookie(
+                key='refresh_token',
+                value=tokens['refresh'],
+                httponly=True,
+                secure=isProduction,
+                samesite='None' if isProduction else 'Lax',
+            )
+            return response
